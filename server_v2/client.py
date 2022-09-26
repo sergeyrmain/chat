@@ -1,17 +1,14 @@
 import socket
 import threading
 
+from server_v2.settings import settings
+
 
 class Client:
-    PORT = 8000
-    SERVER = ''
-    ADDRESS = (SERVER, PORT)
-    FORMAT = 'utf-8'
-    BUFFER_SIZE = 1024
 
     def __init__(self, name):
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # ipv4 , tcp
-        self.client_socket.connect(self.ADDRESS)
+        self.client_socket.connect((settings.SERVER, settings.PORT))
         self.messages = []
         receive_thread = threading.Thread(target=self.receive_messages)
         receive_thread.start()
@@ -21,7 +18,7 @@ class Client:
     def receive_messages(self):
         while True:
             try:
-                message = self.client_socket.recv(self.BUFFER_SIZE).decode(self.FORMAT)
+                message = self.client_socket.recv(settings.BUFFER_SIZE).decode(settings.FORMAT)
                 self.lock.acquire()
                 self.messages.append(message)
                 self.lock.release()
@@ -31,8 +28,9 @@ class Client:
 
     def send_messages(self, message):
         try:
-            self.client_socket.send(bytes(message, self.FORMAT))
-            if message == bytes(f"{quit}", self.FORMAT):
+            self.client_socket.send(bytes(message, settings.FORMAT))
+            print('send_messages: ', message)
+            if message == '{quit}':
                 self.client_socket.close()
                 return
         except Exception as e:
@@ -46,6 +44,8 @@ class Client:
         self.lock.release()
         return messages_copy
 
-
     def disconnect(self):
-        self.send_messages(bytes(f"{quit}", self.FORMAT))
+        self.send_messages('{quit}')
+
+
+

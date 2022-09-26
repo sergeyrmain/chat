@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     SERVER: str = Field(env='SERVER', default='')
     FORMAT: str = Field(env='FORMAT', default='utf-8')
     BUFFER_SIZE: int = Field(env='BUFFER_SIZE', default=1024)
-    ADDRESS: tuple = Field(env='ADDRESS', default=(SERVER, PORT))
+
 
 
 settings = Settings()

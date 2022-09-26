@@ -1,35 +1,37 @@
 import socket
 import threading
 
+
 from server_v2.client_obj import ClientObject
-from server_v2.settings import Settings
+from server_v2.settings import settings
+
 
 connected_clients = []
 
 SERVER = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # ipv4 , tcp
-SERVER.bind(Settings.ADDRESS)
+SERVER.bind((settings.SERVER, settings.PORT))
 
 
 def broadcast(message, name):
     for client in connected_clients:
         current_client = client.client
         if name:
-            current_client.send(bytes(f"{name}: {message}", Settings.FORMAT))
+            current_client.send(bytes(f"{name}: {message}", settings.FORMAT))
         else:
-            current_client.send(bytes(message, Settings.FORMAT))
+            current_client.send(bytes(message, settings.FORMAT))
 
 
 def handle_client(current_client):
-    name = current_client.client.recv(Settings.BUFFER_SIZE).decode(Settings.FORMAT)
+    name = current_client.client.recv(settings.BUFFER_SIZE).decode(settings.FORMAT)
     current_client.set_name(name)
     message = f'{name} has joined the chat'
     broadcast(message, '')
     while True:
         try:
-            message = current_client.client.recv(Settings.BUFFER_SIZE).decode(Settings.FORMAT)
+            message = current_client.client.recv(settings.BUFFER_SIZE).decode(settings.FORMAT)
             if not message:
                 break
-            if message == bytes(f"{quit}", Settings.FORMAT):
+            if message == '{quit}':
                 # current_client.client.send(bytes(f"{quit}", FORMAT))
                 current_client.client.close()
                 connected_clients.remove(current_client)
